@@ -4,6 +4,7 @@ WINDOW_WIDTH = 1080
 WINDOW_HEIGHT = 600
 WORD_INDEX = 0
 word_fill_index = 0
+fg_color_index = 0
 
 class UserInterface(Tk):
 
@@ -47,64 +48,56 @@ class UserInterface(Tk):
 
     def check_retrieved_text(self, event):
 
-        global WORD_INDEX, word_fill_index
-
-        def get_foreground_at_index(text_widget, index):
-
-            tags_at_index = text_widget.tag_names(index)
-
-            for tag in tags_at_index:
-                fg_color = text_widget.tag_cget(tag, "foreground")
-                if fg_color:
-                    return fg_color
-
-            # 3. Fallback to the text widget's global default foreground configuration
-            return text_widget.cget("foreground")
-
+        global WORD_INDEX, word_fill_index, fg_color_index
 
         text_input = self.entered_text_input.get("1.0", "end-1c")
-        display_text_list = self.display_text.get("1.0", "end-1c").split()
+        display_text_string = self.display_text.get("1.0", "end-1c")
 
         if event.keysym in ("Shift_L"):
             return
 
-
-        for display_char, input_char in zip(display_text_list[WORD_INDEX], text_input):
-
-            print(display_char)
-            char_index = display_text_list[WORD_INDEX].index(display_char)
-            fg_color = get_foreground_at_index(self.display_text, f"1.{char_index}")
+        fg_color = self.get_foreground_at_index(self.display_text, f"1.{fg_color_index}")
+        for char_index, (display_char, input_char) in enumerate(zip(display_text_string, text_input)):
 
 
             if fg_color == "black":
-
                 tag_name = f"char_{char_index}"  # unique tag per position
 
-                if display_char == input_char:
-
+                if display_text_string[char_index] == input_char:
                     self.display_text.tag_config(tag_name, foreground="green")
-                    word_fill_index += 1
+                    fg_color_index += 1
 
-                elif display_char != input_char:
+                elif display_text_string[char_index] != input_char:
                     self.display_text.tag_config(tag_name, foreground="red")
-
-                    word_fill_index += 1
+                    fg_color_index += 1
 
                 self.display_text.tag_add(tag_name, f"1.{char_index}")
 
             else:
                 pass
 
-        if len(display_text_list[WORD_INDEX]) == word_fill_index:
+        # if len(display_text_list[WORD_INDEX]) == word_fill_index:
+        #
+        #     if event.keysym in ("Return"):
+        #
+        #         print("complete")
+        #
+        #         WORD_INDEX += 1
+        #         word_fill_index = 0
+        #
+        #         print(WORD_INDEX, word_fill_index)
 
-            if event.keysym in ("Return"):
+    def get_foreground_at_index(self, text_widget, index):
 
-                print("complete")
+        tags_at_index = text_widget.tag_names(index)
 
-                WORD_INDEX += 1
-                word_fill_index = 0
+        for tag in tags_at_index:
+            fg_color = text_widget.tag_cget(tag, "foreground")
+            if fg_color:
+                return fg_color
 
-                print(WORD_INDEX, word_fill_index)
+        # 3. Fallback to the text widget's global default foreground configuration
+        return text_widget.cget("foreground")
 
     # ************************************************ WIDGET  BUTTON **************************************************
 

@@ -11,6 +11,7 @@ BUTTON_COLOR = "#FFC000"
 word_fill_index = 0
 fg_color_index = 0
 START_TIMER = 0
+CORRECT_CHARACTER_COUNT = 0
 
 class UserInterface(Tk):
 
@@ -118,8 +119,8 @@ class UserInterface(Tk):
 
     # ******************************************** ADD TYPING TEXT AREA ************************************************
 
-    def check_typing_text(self, typing_text):
-        """this method add typing text on screen so that user can start typing."""
+    def display_typing_text(self, typing_text):
+        """this method display typing text on screen so that user can see whats needs to be typed."""
 
         self.display_text = Text(self, font=self.app_font, fg=TEXT_COLOR, height=10, width=70, wrap="word",
                                  bg=BACKGROUND_COLOR, bd=0, pady=15, padx=15)
@@ -135,23 +136,22 @@ class UserInterface(Tk):
 
         # gets text input and gets display typing text display text.
         text_input = self.entered_text_input.get("1.0", "end-1c")
-        display_text_string = self.display_text.get("1.0", "end-1c")
+        self.display_text_string = self.display_text.get("1.0", "end-1c")
 
         if START_TIMER == 0:
             timer_mode = self.timer_mode.get().split()
 
 
             try:
-                total_seconds = int(timer_mode[0].replace(",", ""))
+                self.total_seconds = int(timer_mode[0].replace(",", ""))
                 selected_timer_option = timer_mode[1]
-
-                self.timer_countdown(total_seconds, selected_timer_option)
+                self.timer_countdown(self.total_seconds, selected_timer_option)
 
             except ValueError:
 
-                total_default_seconds = 60
-                default_timer_option = "60_seconds"
-                self.timer_countdown(total_default_seconds, default_timer_option)
+                self.total_seconds = 60
+                selected_timer_option = "60_seconds"
+                self.timer_countdown(self.total_seconds, selected_timer_option)
 
 
         # ignores the shift Left side btn while using
@@ -177,16 +177,17 @@ class UserInterface(Tk):
         fg_color = self.get_foreground_at_index(self.display_text, f"1.{fg_color_index}")
 
         # this for loop checks the user input char and typing text char and change color based on match and mismatch.
-        for char_index, (display_char, input_char) in enumerate(zip(display_text_string, text_input)):
+        for char_index, (display_char, input_char) in enumerate(zip(self.display_text_string, text_input)):
 
             if fg_color == TEXT_COLOR:
 
                 tag_name = f"char_{char_index}"  # unique tag per position
 
-                if display_text_string[char_index] == input_char:
+                if self.display_text_string[char_index] == input_char:
                     self.display_text.tag_config(tag_name, foreground="white")
 
-                elif display_text_string[char_index] != input_char:
+
+                elif self.display_text_string[char_index] != input_char:
 
                     self.display_text.tag_config(tag_name, foreground="red")
                 self.display_text.tag_add(tag_name, f"1.{char_index}")
@@ -206,10 +207,10 @@ class UserInterface(Tk):
             if fg_color:
                 return fg_color
 
-        # 3. Fallback to the text widget's global default foreground configuration
+        #  Fallback to the text widget's global default foreground configuration
         return text_widget.cget("foreground")
 
-    # ************************************************ WIDGET  BUTTON **************************************************
+    # *************************************** timer Countdown functionality ********************************************
 
     def timer_countdown(self, seconds_left, selected_timer_option):
 
@@ -231,11 +232,12 @@ class UserInterface(Tk):
 
             count_second = seconds_left
             if count_second == 0:
+
                 self.timier_text.place_forget()
                 self.entered_text_input.config(state="disabled")
-
-
+                self.calculate_wpm_and_keystroke_accuracy()
                 return
+
 
         elif count_second < 10:
             count_second = f"0{count_second}"
@@ -245,3 +247,25 @@ class UserInterface(Tk):
         # if seconds will be greater than 0 than .after() method will call the time_countdown function again & also subtract the second each second.
         if seconds_left > 0:
             self.after(500, self.timer_countdown, seconds_left - 1, selected_timer_option)
+
+
+    # ************************************* calculate wpm & keystroke accuracy******************************************
+
+    def calculate_wpm_and_keystroke_accuracy(self):
+
+        # getting all entered text in list format for total word count.
+        all_input_word_list = self.entered_text_input.get("1.0", "end-1c").split()
+        displayed_word_list  = self.display_text_string.split()
+
+        # gives total word count if all the typed word is correct
+        total_word_count = len(all_input_word_list)
+
+        # gives total word count of typed word including incorrect.
+        if all_input_word_list[total_word_count - 1] != displayed_word_list[total_word_count]:
+            total_word_count -= 1
+
+        total_minutes = self.total_seconds / 60 # calculating seconds in minute
+
+        word_per_minute = total_word_count / total_minutes
+
+

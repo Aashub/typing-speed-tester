@@ -10,9 +10,12 @@ typing_text ="T-bone pancetta quis cupidatat tongue dolore. Filet mignon nisi Fi
 
 ui = UserInterface()
 ui.add_typing_test_screen()
-ui.check_typing_text(typing_text)
+ui.display_typing_text(typing_text)
 ui.all_widget_button()
 ui.bind("<KeyRelease>", ui.check_retrieved_text)
+
+
+
 ui.mainloop()
 
 

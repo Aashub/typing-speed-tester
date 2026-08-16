@@ -117,6 +117,10 @@ class UserInterface(Tk):
         self.timier_text = Label(self, text=f"{seconds_left}", font=("Arial", 30), relief="flat", bg=BACKGROUND_COLOR,
                                  fg=BUTTON_COLOR)
 
+        # wpm label
+        self.wpm_text = Label(self, text=f"WPM: ", font=("Arial", 30), relief="flat", bg=BACKGROUND_COLOR,
+                                 fg=BUTTON_COLOR)
+
     # ******************************************** ADD TYPING TEXT AREA ************************************************
 
     def display_typing_text(self, typing_text):
@@ -192,8 +196,6 @@ class UserInterface(Tk):
                     self.display_text.tag_config(tag_name, foreground="red")
                 self.display_text.tag_add(tag_name, f"1.{char_index}")
 
-
-
         fg_color_index += 1
         START_TIMER += 1
 
@@ -235,7 +237,7 @@ class UserInterface(Tk):
 
                 self.timier_text.place_forget()
                 self.entered_text_input.config(state="disabled")
-                self.calculate_wpm_and_keystroke_accuracy()
+                self.calculate_word_per_minute()
                 return
 
 
@@ -251,7 +253,8 @@ class UserInterface(Tk):
 
     # ************************************* calculate wpm & keystroke accuracy******************************************
 
-    def calculate_wpm_and_keystroke_accuracy(self):
+    def calculate_word_per_minute(self):
+        """this method calculate and show word per minute user has achieved."""
 
         # getting all entered text in list format for total word count.
         all_input_word_list = self.entered_text_input.get("1.0", "end-1c").split()
@@ -266,6 +269,7 @@ class UserInterface(Tk):
 
         total_minutes = self.total_seconds / 60 # calculating seconds in minute
 
-        word_per_minute = total_word_count / total_minutes
+        word_per_minute = int(round(total_word_count / total_minutes, 0))
 
-
+        self.wpm_text.config(text=f"WPM: {word_per_minute}")
+        self.wpm_text.place(x=455, y=70)

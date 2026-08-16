@@ -8,10 +8,9 @@ TEXT_COLOR = "#666666"
 BACKGROUND_COLOR = "#1E1E1E"
 BUTTON_COLOR = "#FFC000"
 
-word_fill_index = 0
-fg_color_index = 0
-START_TIMER = 0
-CORRECT_CHARACTER_COUNT = 0
+fg_color_index = 0 # this variable keeps track of character position
+START_TIMER = 0 # this variable makes a if condition true in check_retrieved_text method to call  timer_countdown method
+STOP_TIMER_COUNTDOWN = False
 
 class UserInterface(Tk):
 
@@ -26,11 +25,11 @@ class UserInterface(Tk):
         center_x = int((screen_width / 2) - (WINDOW_WIDTH / 2))
         center_y = int((screen_height / 2) - (WINDOW_HEIGHT / 2))
 
+        self.main_frame = None
         self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}+{center_x}+{center_y}")
         self.resizable(False, False)
         self.title("typing-speed-tester")
         self.app_font = Font(family="Segoe UI", size=16, slant="italic")
-        self.timer_start_status = False
 
     # ********************************************** TYPING TEST SCREEN ************************************************
 
@@ -46,10 +45,12 @@ class UserInterface(Tk):
 
     def all_widget_button(self):
 
+        self.main_frame = Frame(self)
+
         # reset button
-        reset_btn = Button(self, text="⭮", font=("Arial", 25, "bold"), fg=BUTTON_COLOR,
-                           bd=0, bg=BACKGROUND_COLOR, height=1, width=3)
-        reset_btn.place(x=510, y=450)
+        self.reset_btn = Button(self, text="⭮", font=("Arial", 25, "bold"), fg=BUTTON_COLOR,
+                           bd=0, bg=BACKGROUND_COLOR, height=1, width=3, command=self.reset_typing)
+        self.reset_btn.place(x=510, y=450)
 
         # Create a shared Tkinter variable
         selected_option = StringVar(self, value="Option 1")
@@ -114,8 +115,8 @@ class UserInterface(Tk):
 
         # timer label
         seconds_left = None
-        self.timier_text = Label(self, text=f"{seconds_left}", font=("Arial", 30), relief="flat", bg=BACKGROUND_COLOR,
-                                 fg=BUTTON_COLOR)
+        self.timer_text = Label(self, text=f"{seconds_left}", font=("Arial", 30), relief="flat", bg=BACKGROUND_COLOR,
+                                fg=BUTTON_COLOR)
 
         # wpm label
         self.wpm_text = Label(self, text=f"WPM: ", font=("Arial", 30), relief="flat", bg=BACKGROUND_COLOR,
@@ -136,15 +137,21 @@ class UserInterface(Tk):
     def check_retrieved_text(self, event):
         """this method will check user entered text vs typing text and highlight character with white color if correct and red if wrong character"""
 
-        global fg_color_index,START_TIMER
+        global fg_color_index, START_TIMER, STOP_TIMER_COUNTDOWN
+
+
+        STOP_TIMER_COUNTDOWN = False
+
+        if not STOP_TIMER_COUNTDOWN:
+            self.timer_text.place(x=510, y=70)
 
         # gets text input and gets display typing text display text.
         text_input = self.entered_text_input.get("1.0", "end-1c")
         self.display_text_string = self.display_text.get("1.0", "end-1c")
 
+
         if START_TIMER == 0:
             timer_mode = self.timer_mode.get().split()
-
 
             try:
                 self.total_seconds = int(timer_mode[0].replace(",", ""))
@@ -190,7 +197,6 @@ class UserInterface(Tk):
                 if self.display_text_string[char_index] == input_char:
                     self.display_text.tag_config(tag_name, foreground="white")
 
-
                 elif self.display_text_string[char_index] != input_char:
 
                     self.display_text.tag_config(tag_name, foreground="red")
@@ -215,12 +221,11 @@ class UserInterface(Tk):
     # *************************************** timer Countdown functionality ********************************************
 
     def timer_countdown(self, seconds_left, selected_timer_option):
+        """this method starts the countdown when user starts typing and stops the time when """
 
-
-        global count_second, TIMER_START_STATUS
-        self.timier_text.config(text=seconds_left)
-        self.timier_text.place(x=510, y=70)
-
+        global count_second
+        self.timer_text.config(text=seconds_left)
+        self.timer_text.place(x=510, y=70)
 
         if selected_timer_option == "60_seconds":
             count_second = seconds_left % 60
@@ -235,16 +240,20 @@ class UserInterface(Tk):
             count_second = seconds_left
             if count_second == 0:
 
-                self.timier_text.place_forget()
+                self.timer_text.place_forget()
                 self.entered_text_input.config(state="disabled")
                 self.calculate_word_per_minute()
                 return
 
-
         elif count_second < 10:
             count_second = f"0{count_second}"
 
-        self.timier_text.config(text=f"{count_second}")
+        self.timer_text.config(text=f"{count_second}")
+
+        # if the condition of STOP_TIMER_COUNTDOWN became True than it will stop the timer_countdown method.
+        if STOP_TIMER_COUNTDOWN:
+            self.timer_text.place_forget()
+            return
 
         # if seconds will be greater than 0 than .after() method will call the time_countdown function again & also subtract the second each second.
         if seconds_left > 0:
@@ -273,3 +282,31 @@ class UserInterface(Tk):
 
         self.wpm_text.config(text=f"WPM: {word_per_minute}")
         self.wpm_text.place(x=455, y=70)
+
+    # ************************************************ Reset Typing  ***************************************************
+
+    def reset_typing(self):
+        """this method will rest the typing so when user click on rest btn everything gets reset so that user can restart typing."""
+
+        global fg_color_index, START_TIMER, STOP_TIMER_COUNTDOWN, count_second
+
+        # reset the global variable back to zero
+        fg_color_index = 0
+        START_TIMER =  0
+        STOP_TIMER_COUNTDOWN = True
+
+        # clear the user's typed input and make state normal so that user can start new typing.
+        self.entered_text_input.config(state="normal")
+        self.entered_text_input.delete("1.0", "end")
+
+        # reset all character highlighting back to the default color
+        # remove all the per-character tags we created during the test
+        for tag in self.display_text.tag_names():
+            if tag.startswith("char_"):
+                self.display_text.tag_delete(tag)
+
+        # make word_per_minute text disappear
+        self.wpm_text.place_forget()
+
+        # make timer text disappear
+        self.timer_text.place_forget()

@@ -1,5 +1,7 @@
 from tkinter import *
 from tkinter.font import Font
+from typing_data import typing_paragraph_dict
+import random
 
 WINDOW_WIDTH = 1080
 WINDOW_HEIGHT = 600
@@ -11,6 +13,7 @@ BUTTON_COLOR = "#FFC000"
 fg_color_index = 0 # this variable keeps track of character position
 START_TIMER = 0 # this variable makes a if condition true in check_retrieved_text method to call  timer_countdown method
 STOP_TIMER_COUNTDOWN = False
+
 
 class UserInterface(Tk):
 
@@ -25,7 +28,8 @@ class UserInterface(Tk):
         center_x = int((screen_width / 2) - (WINDOW_WIDTH / 2))
         center_y = int((screen_height / 2) - (WINDOW_HEIGHT / 2))
 
-        self.main_frame = None
+
+        self.selected_difficulty_mode = "easy_mode"
         self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}+{center_x}+{center_y}")
         self.resizable(False, False)
         self.title("typing-speed-tester")
@@ -50,35 +54,35 @@ class UserInterface(Tk):
         # reset button
         self.reset_btn = Button(self, text="⭮", font=("Arial", 25, "bold"), fg=BUTTON_COLOR,
                            bd=0, bg=BACKGROUND_COLOR, height=1, width=3, command=self.reset_typing)
-        self.reset_btn.place(x=510, y=450)
+        self.reset_btn.place(x=510, y=460)
 
         # Create a shared Tkinter variable
-        selected_option = StringVar(self, value="Option 1")
+        self.selected_option = StringVar(self, value="Option 1")
 
         #  Create the Radiobutton widgets
-        easy_radio_btn = Radiobutton(self, text="Easy", variable=selected_option, value="Option 1",
+        easy_radio_btn = Radiobutton(self, text="Easy", variable=self.selected_option, value="easy_mode",
                                      bg=BACKGROUND_COLOR, fg=BUTTON_COLOR, font=("Arial"),
                                      activebackground=BACKGROUND_COLOR,
-                                     activeforeground="white", selectcolor=BACKGROUND_COLOR,
+                                     activeforeground="white", selectcolor=BACKGROUND_COLOR, command=self.handle_typing_mode
                                      )
 
-        normal_radio_btn = Radiobutton(self, text="Normal", variable=selected_option, value="Option 2",
+        normal_radio_btn = Radiobutton(self, text="Normal", variable=self.selected_option, value="normal_mode",
                                        bg=BACKGROUND_COLOR, fg=BUTTON_COLOR, font=("Arial",),
                                        activebackground=BACKGROUND_COLOR,
-                                       activeforeground="white", selectcolor=BACKGROUND_COLOR,
+                                       activeforeground="white", selectcolor=BACKGROUND_COLOR, command=self.handle_typing_mode
                                        )
 
-        hard_radio_btn = Radiobutton(self, text="Hard", variable=selected_option,
-                                     value="Option 3",
+        hard_radio_btn = Radiobutton(self, text="Hard", variable=self.selected_option,
+                                     value="hard_mode",
                                      bg=BACKGROUND_COLOR, fg=BUTTON_COLOR, font=("Arial"),
                                      activebackground=BACKGROUND_COLOR,
-                                     activeforeground="white", selectcolor=BACKGROUND_COLOR,
+                                     activeforeground="white", selectcolor=BACKGROUND_COLOR, command=self.handle_typing_mode
                                      )
 
         # 3. Display the radio button on the screen
-        easy_radio_btn.place(x=200, y=470)
-        normal_radio_btn.place(x=300, y=470)
-        hard_radio_btn.place(x=410, y=470)
+        easy_radio_btn.place(x=200, y=480)
+        normal_radio_btn.place(x=300, y=480)
+        hard_radio_btn.place(x=410, y=480)
 
         # Create a shared Tkinter variable
         self.timer_mode = StringVar(self, value="Option 1")
@@ -104,9 +108,9 @@ class UserInterface(Tk):
                                           )
 
         # 3. Display the radio button on the screen
-        self.second_60_btn.place(x=620, y=470)
-        self.second_120_btn.place(x=715, y=470)
-        self.second_180_btn.place(x=820, y=470)
+        self.second_60_btn.place(x=620, y=480)
+        self.second_120_btn.place(x=715, y=480)
+        self.second_180_btn.place(x=820, y=480)
 
         # entry field
         self.entered_text_input = Text(self, font=("Arial", 30), width=10, height=1, relief="flat")
@@ -124,12 +128,14 @@ class UserInterface(Tk):
 
     # ******************************************** ADD TYPING TEXT AREA ************************************************
 
-    def display_typing_text(self, typing_text):
+    def display_typing_text(self):
         """this method display typing text on screen so that user can see whats needs to be typed."""
 
         self.display_text = Text(self, font=self.app_font, fg=TEXT_COLOR, height=10, width=70, wrap="word",
                                  bg=BACKGROUND_COLOR, bd=0, pady=15, padx=15)
-        self.display_text.insert("1.0", typing_text)
+
+        default_sentence_index = random.randint(0,4)
+        self.display_text.insert("1.0", typing_paragraph_dict["easy_mode"][default_sentence_index])
         self.display_text.place(x=145, y=120)
 
 
@@ -257,7 +263,8 @@ class UserInterface(Tk):
 
         # if seconds will be greater than 0 than .after() method will call the time_countdown function again & also subtract the second each second.
         if seconds_left > 0:
-            self.after(500, self.timer_countdown, seconds_left - 1, selected_timer_option)
+
+            self.after(600, self.timer_countdown, seconds_left - 1, selected_timer_option)
 
 
     # ************************************* calculate wpm & keystroke accuracy******************************************
@@ -290,23 +297,52 @@ class UserInterface(Tk):
 
         global fg_color_index, START_TIMER, STOP_TIMER_COUNTDOWN, count_second
 
-        # reset the global variable back to zero
-        fg_color_index = 0
-        START_TIMER =  0
-        STOP_TIMER_COUNTDOWN = True
+        default_typing_mode =  self.selected_option.get()
 
-        # clear the user's typed input and make state normal so that user can start new typing.
-        self.entered_text_input.config(state="normal")
-        self.entered_text_input.delete("1.0", "end")
+        if default_typing_mode == "Option 1":
+            random_index = random.randint(0, 4)
+            self.display_text.delete('1.0', 'end')
+            sentence = typing_paragraph_dict["easy_mode"][random_index]
+            self.display_text.insert("1.0", sentence)
 
-        # reset all character highlighting back to the default color
-        # remove all the per-character tags we created during the test
-        for tag in self.display_text.tag_names():
-            if tag.startswith("char_"):
-                self.display_text.tag_delete(tag)
+        else:
+            # reset the global variable back to zero
+            fg_color_index = 0
+            START_TIMER =  0
+            STOP_TIMER_COUNTDOWN = True
 
-        # make word_per_minute text disappear
-        self.wpm_text.place_forget()
+            # clear the user's typed input and make state normal so that user can start new typing.
+            self.entered_text_input.config(state="normal")
+            self.entered_text_input.delete("1.0", "end")
 
-        # make timer text disappear
-        self.timer_text.place_forget()
+            # reset all character highlighting back to the default color
+            # remove all the per-character tags we created during the test
+            for tag in self.display_text.tag_names():
+                if tag.startswith("char_"):
+                    self.display_text.tag_delete(tag)
+
+            # make word_per_minute text disappear
+            self.wpm_text.place_forget()
+
+            # make timer text disappear
+            self.timer_text.place_forget()
+
+
+    def handle_typing_mode(self):
+        """this method will update the sentence as per the selected difficulty leve."""
+
+        if self.selected_option.get():
+
+            self.reset_typing()
+            self.selected_difficulty_mode = self.selected_option.get()
+            self.display_text.delete('1.0', 'end')
+
+            random_index = random.randint(0, 4)
+            for difficulty_mode in typing_paragraph_dict:
+
+                if difficulty_mode == self.selected_difficulty_mode:
+
+                    sentence = typing_paragraph_dict[difficulty_mode][random_index]
+                    self.display_text.insert("1.0", sentence)
+                    break
+

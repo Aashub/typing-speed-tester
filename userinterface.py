@@ -10,8 +10,8 @@ TEXT_COLOR = "#666666"
 BACKGROUND_COLOR = "#1E1E1E"
 BUTTON_COLOR = "#FFC000"
 
-fg_color_index = 0 # this variable keeps track of character position
-START_TIMER = 0 # this variable makes a if condition true in check_retrieved_text method to call  timer_countdown method
+fg_color_index = 0  # this variable keeps track of character position
+START_TIMER = 0  # this variable makes a if condition true in check_retrieved_text method to call  timer_countdown method
 STOP_TIMER_COUNTDOWN = False
 
 
@@ -27,7 +27,6 @@ class UserInterface(Tk):
         screen_height = self.winfo_screenheight()
         center_x = int((screen_width / 2) - (WINDOW_WIDTH / 2))
         center_y = int((screen_height / 2) - (WINDOW_HEIGHT / 2))
-
 
         self.selected_difficulty_mode = "easy_mode"
         self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}+{center_x}+{center_y}")
@@ -49,12 +48,10 @@ class UserInterface(Tk):
 
     def all_widget_button(self):
 
-        self.main_frame = Frame(self)
-
         # reset button
         self.reset_btn = Button(self, text="⭮", font=("Arial", 25, "bold"), fg=BUTTON_COLOR,
-                           bd=0, bg=BACKGROUND_COLOR, height=1, width=3, command=self.reset_typing)
-        self.reset_btn.place(x=510, y=460)
+                                bd=0, bg=BACKGROUND_COLOR, height=1, width=3, command=self.reset_typing)
+        self.reset_btn.place(x=510, y=480)
 
         # Create a shared Tkinter variable
         self.selected_option = StringVar(self, value="Option 1")
@@ -63,26 +60,29 @@ class UserInterface(Tk):
         easy_radio_btn = Radiobutton(self, text="Easy", variable=self.selected_option, value="easy_mode",
                                      bg=BACKGROUND_COLOR, fg=BUTTON_COLOR, font=("Arial"),
                                      activebackground=BACKGROUND_COLOR,
-                                     activeforeground="white", selectcolor=BACKGROUND_COLOR, command=self.handle_typing_mode
+                                     activeforeground="white", selectcolor=BACKGROUND_COLOR,
+                                     command=self.handle_typing_mode
                                      )
 
         normal_radio_btn = Radiobutton(self, text="Normal", variable=self.selected_option, value="normal_mode",
                                        bg=BACKGROUND_COLOR, fg=BUTTON_COLOR, font=("Arial",),
                                        activebackground=BACKGROUND_COLOR,
-                                       activeforeground="white", selectcolor=BACKGROUND_COLOR, command=self.handle_typing_mode
+                                       activeforeground="white", selectcolor=BACKGROUND_COLOR,
+                                       command=self.handle_typing_mode
                                        )
 
         hard_radio_btn = Radiobutton(self, text="Hard", variable=self.selected_option,
                                      value="hard_mode",
                                      bg=BACKGROUND_COLOR, fg=BUTTON_COLOR, font=("Arial"),
                                      activebackground=BACKGROUND_COLOR,
-                                     activeforeground="white", selectcolor=BACKGROUND_COLOR, command=self.handle_typing_mode
+                                     activeforeground="white", selectcolor=BACKGROUND_COLOR,
+                                     command=self.handle_typing_mode
                                      )
 
         # 3. Display the radio button on the screen
-        easy_radio_btn.place(x=200, y=480)
-        normal_radio_btn.place(x=300, y=480)
-        hard_radio_btn.place(x=410, y=480)
+        easy_radio_btn.place(x=200, y=500)
+        normal_radio_btn.place(x=300, y=500)
+        hard_radio_btn.place(x=410, y=500)
 
         # Create a shared Tkinter variable
         self.timer_mode = StringVar(self, value="Option 1")
@@ -108,9 +108,9 @@ class UserInterface(Tk):
                                           )
 
         # 3. Display the radio button on the screen
-        self.second_60_btn.place(x=620, y=480)
-        self.second_120_btn.place(x=715, y=480)
-        self.second_180_btn.place(x=820, y=480)
+        self.second_60_btn.place(x=620, y=500)
+        self.second_120_btn.place(x=715, y=500)
+        self.second_180_btn.place(x=820, y=500)
 
         # entry field
         self.entered_text_input = Text(self, font=("Arial", 30), width=10, height=1, relief="flat")
@@ -124,7 +124,7 @@ class UserInterface(Tk):
 
         # wpm label
         self.wpm_text = Label(self, text=f"WPM: ", font=("Arial", 30), relief="flat", bg=BACKGROUND_COLOR,
-                                 fg=BUTTON_COLOR)
+                              fg=BUTTON_COLOR)
 
     # ******************************************** ADD TYPING TEXT AREA ************************************************
 
@@ -134,27 +134,23 @@ class UserInterface(Tk):
         self.display_text = Text(self, font=self.app_font, fg=TEXT_COLOR, height=10, width=70, wrap="word",
                                  bg=BACKGROUND_COLOR, bd=0, pady=15, padx=15)
 
-        default_sentence_index = random.randint(0,4)
+        default_sentence_index = random.randint(0, 4)
         self.display_text.insert("1.0", typing_paragraph_dict["easy_mode"][default_sentence_index])
-        self.display_text.place(x=145, y=120)
-
-
+        self.display_text.place(x=145, y=130)
 
     def check_retrieved_text(self, event):
         """this method will check user entered text vs typing text and highlight character with white color if correct and red if wrong character"""
 
         global fg_color_index, START_TIMER, STOP_TIMER_COUNTDOWN
 
-
         STOP_TIMER_COUNTDOWN = False
 
         if not STOP_TIMER_COUNTDOWN:
-            self.timer_text.place(x=510, y=70)
+            self.timer_text.place(x=510, y=80)
 
         # gets text input and gets display typing text display text.
         text_input = self.entered_text_input.get("1.0", "end-1c")
         self.display_text_string = self.display_text.get("1.0", "end-1c")
-
 
         if START_TIMER == 0:
             timer_mode = self.timer_mode.get().split()
@@ -169,7 +165,6 @@ class UserInterface(Tk):
                 self.total_seconds = 60
                 selected_timer_option = "60_seconds"
                 self.timer_countdown(self.total_seconds, selected_timer_option)
-
 
         # ignores the shift Left side btn while using
         if event.keysym == ("Shift_L"):
@@ -231,7 +226,7 @@ class UserInterface(Tk):
 
         global count_second
         self.timer_text.config(text=seconds_left)
-        self.timer_text.place(x=510, y=70)
+        self.timer_text.place(x=510, y=80)
 
         if selected_timer_option == "60_seconds":
             count_second = seconds_left % 60
@@ -245,7 +240,6 @@ class UserInterface(Tk):
 
             count_second = seconds_left
             if count_second == 0:
-
                 self.timer_text.place_forget()
                 self.entered_text_input.config(state="disabled")
                 self.calculate_word_per_minute()
@@ -263,9 +257,7 @@ class UserInterface(Tk):
 
         # if seconds will be greater than 0 than .after() method will call the time_countdown function again & also subtract the second each second.
         if seconds_left > 0:
-
             self.after(600, self.timer_countdown, seconds_left - 1, selected_timer_option)
-
 
     # ************************************* calculate wpm & keystroke accuracy******************************************
 
@@ -274,7 +266,7 @@ class UserInterface(Tk):
 
         # getting all entered text in list format for total word count.
         all_input_word_list = self.entered_text_input.get("1.0", "end-1c").split()
-        displayed_word_list  = self.display_text_string.split()
+        displayed_word_list = self.display_text_string.split()
 
         # gives total word count if all the typed word is correct
         total_word_count = len(all_input_word_list)
@@ -283,7 +275,7 @@ class UserInterface(Tk):
         if all_input_word_list[total_word_count - 1] != displayed_word_list[total_word_count]:
             total_word_count -= 1
 
-        total_minutes = self.total_seconds / 60 # calculating seconds in minute
+        total_minutes = self.total_seconds / 60  # calculating seconds in minute
 
         word_per_minute = int(round(total_word_count / total_minutes, 0))
 
@@ -297,7 +289,7 @@ class UserInterface(Tk):
 
         global fg_color_index, START_TIMER, STOP_TIMER_COUNTDOWN, count_second
 
-        default_typing_mode =  self.selected_option.get()
+        default_typing_mode = self.selected_option.get()
 
         if default_typing_mode == "Option 1":
             random_index = random.randint(0, 4)
@@ -308,7 +300,7 @@ class UserInterface(Tk):
         else:
             # reset the global variable back to zero
             fg_color_index = 0
-            START_TIMER =  0
+            START_TIMER = 0
             STOP_TIMER_COUNTDOWN = True
 
             # clear the user's typed input and make state normal so that user can start new typing.
@@ -327,6 +319,7 @@ class UserInterface(Tk):
             # make timer text disappear
             self.timer_text.place_forget()
 
+    # ******************************************** Set Difficulty Mode *************************************************
 
     def handle_typing_mode(self):
         """this method will update the sentence as per the selected difficulty leve."""
@@ -341,8 +334,6 @@ class UserInterface(Tk):
             for difficulty_mode in typing_paragraph_dict:
 
                 if difficulty_mode == self.selected_difficulty_mode:
-
                     sentence = typing_paragraph_dict[difficulty_mode][random_index]
                     self.display_text.insert("1.0", sentence)
                     break
-
